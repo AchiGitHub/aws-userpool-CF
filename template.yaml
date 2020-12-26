@@ -1,18 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Cognito Stack
-Parameters:
-  AuthName:
-    Type: String
-    Description: test-cloudformation-userpool
-  LambdaPostProduct:
-    Type: String
-    Default: Lambda-post-products
-  LambdaGetProducts:
-    Type: String
-    Default: Lambda-get-products
-  EnvironmentName:
-    Type: String
-    Default: Prod
 Resources:
   #Creates an Amazon Cognito user pool
   UserPool:
