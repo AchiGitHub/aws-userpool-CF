@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Cognito Stack
+Parameters:
+  AuthName:
+    Type: String
+    Description: test-cloudformation-userpool
+  LambdaPostProduct:
+    Type: String
+    Default: Lambda-post-products
+  LambdaGetProducts:
+    Type: String
+    Default: Lambda-get-products
+  EnvironmentName:
+    Type: String
+    Default: Prod
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: user-pool-test
+      Schema:
+      - Name: name
+        AttributeDataType: String
+        Mutable: true
+        Required: true
+      - Name: email
+        AttributeDataType: String
+        Mutable: false
+        Required: true
+      - Name: phone_number
+        AttributeDataType: String
+        Mutable: false
+        Required: true
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: user-pool-client
+      GenerateSecret: false
+      UserPoolId:
+        Ref: UserPool
+      AllowedOAuthFlows:
+      - code
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+      - phone
+      - email
+      - openid
+      - profile
+      CallbackURLs:
+      - http://localhost:3000/authenticated
+      DefaultRedirectURI: http://localhost:3000/authenticated
+      LogoutURLs:
+      - http://localhost:3000/signedout
+      SupportedIdentityProviders:
+      - COGNITO
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: userpooltestase
+      UserPoolId:
+        Ref: UserPool
+Outputs:
+  UserPoolId:
+    Value:
+      Ref: UserPool
+    Export:
+      Name: UserPool::Id
+  UserPoolClientId:
+    Value:
+      Ref: UserPoolClient
+    Export:
+      Name: UserPoolClient::Id
+  UserPoolArn:
+    Value:
+      Fn::GetAtt:
+      - UserPool
+      - Arn
+    Export:
+      Name: UserPoolArn
