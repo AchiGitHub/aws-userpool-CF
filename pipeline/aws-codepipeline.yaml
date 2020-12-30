@@ -28,6 +28,15 @@ Parameters:
 
 
 Resources:
+
+ ######   #######  ##     ## ########   ######  ######## 
+##    ## ##     ## ##     ## ##     ## ##    ## ##       
+##       ##     ## ##     ## ##     ## ##       ##       
+ ######  ##     ## ##     ## ########  ##       ######   
+      ## ##     ## ##     ## ##   ##   ##       ##       
+##    ## ##     ## ##     ## ##    ##  ##    ## ##       
+ ######   #######   #######  ##     ##  ######  ########
+
     # CodeBuild project and resources (S3 Bucket for build artifacts, Role, Project)
     BuildArtifactsBucket:
         Type: AWS::S3::Bucket
@@ -44,7 +53,16 @@ Resources:
               Key: "Project"
               Value: aws-sam-pipeline
         DeletionPolicy: Retain
-        UpdateReplacePolicy: Retain 
+        UpdateReplacePolicy: Retain
+
+########  ##     ## #### ##       ########  
+##     ## ##     ##  ##  ##       ##     ## 
+##     ## ##     ##  ##  ##       ##     ## 
+########  ##     ##  ##  ##       ##     ## 
+##     ## ##     ##  ##  ##       ##     ## 
+##     ## ##     ##  ##  ##       ##     ## 
+########   #######  #### ######## ########  
+
     CodeBuildProject:
         Type: AWS::CodeBuild::Project
         Properties:
@@ -73,6 +91,15 @@ Resources:
               -
                 Key: "Project"
                 Value: aws-sam-pipeline
+
+########  #### ########  ######## ##       #### ##    ## ######## 
+##     ##  ##  ##     ## ##       ##        ##  ###   ## ##       
+##     ##  ##  ##     ## ##       ##        ##  ####  ## ##       
+########   ##  ########  ######   ##        ##  ## ## ## ######   
+##         ##  ##        ##       ##        ##  ##  #### ##       
+##         ##  ##        ##       ##        ##  ##   ### ##       
+##        #### ##        ######## ######## #### ##    ## ######## 
+
     Pipeline:
         Type: AWS::CodePipeline::Pipeline
         Properties:
@@ -113,7 +140,80 @@ Resources:
                         - Name: SourceCodeAsZip
                       OutputArtifacts:
                         - Name: BuildArtifactAsZip
-                - Name: Prod
+                - Name: dev
+                  Actions:
+                    - Name: CreateChangeSet
+                      ActionTypeId:
+                        Category: Deploy
+                        Owner: AWS
+                        Provider: CloudFormation
+                        Version: "1"
+                      Configuration:
+                      # More info on Possible Values for Cloudformation: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline-action-reference.html#w2ab2c13c13b9
+                        ParameterOverrides: |
+                            {
+                              "Environment" : "dev"
+                            }
+                        ActionMode: CHANGE_SET_REPLACE
+                        RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                        StackName: aws-sam-pipeline-dev
+                        ChangeSetName: aws-sam-pipeline-ChangeSet-dev
+                        TemplatePath: BuildArtifactAsZip::packaged.yaml
+                        Capabilities: CAPABILITY_IAM
+                      InputArtifacts:
+                        - Name: BuildArtifactAsZip
+                      RunOrder: 1
+                    - Name: ExecuteChangeSet
+                      ActionTypeId:
+                        Category: Deploy
+                        Owner: AWS
+                        Provider: CloudFormation
+                        Version: "1"
+                      Configuration:
+                        ActionMode: CHANGE_SET_EXECUTE
+                        RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                        StackName: aws-sam-pipeline-dev
+                        ChangeSetName: aws-sam-pipeline-ChangeSet-dev
+                      OutputArtifacts:
+                        - Name: aws-sam-pipelineDevChangeSet
+                      RunOrder: 2
+                - Name: staging
+                  Actions:
+                    - Name: CreateChangeSet
+                      ActionTypeId:
+                        Category: Deploy
+                        Owner: AWS
+                        Provider: CloudFormation
+                        Version: "1"
+                      Configuration:
+                        ActionMode: CHANGE_SET_REPLACE
+                        RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                        StackName: aws-sam-pipeline-staging
+                        ChangeSetName: aws-sam-pipeline-ChangeSet-staging
+                        TemplatePath: BuildArtifactAsZip::packaged.yaml
+                        Capabilities: CAPABILITY_IAM
+                        ParameterOverrides: |
+                            {
+                              "Environment" : "staging"
+                            }
+                      InputArtifacts:
+                        - Name: BuildArtifactAsZip
+                      RunOrder: 1
+                    - Name: ExecuteChangeSet
+                      ActionTypeId:
+                        Category: Deploy
+                        Owner: AWS
+                        Provider: CloudFormation
+                        Version: "1"
+                      Configuration:
+                        ActionMode: CHANGE_SET_EXECUTE
+                        RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                        StackName: aws-sam-pipeline-staging
+                        ChangeSetName: aws-sam-pipeline-ChangeSet-staging
+                      OutputArtifacts:
+                        - Name: aws-sam-pipelineStagingChangeSet
+                      RunOrder: 2
+                - Name: prod
                   Actions:
                     - Name: DeploymentApproval
                       ActionTypeId:
@@ -131,10 +231,14 @@ Resources:
                       Configuration:
                         ActionMode: CHANGE_SET_REPLACE
                         RoleArn: !GetAtt CloudFormationExecutionRole.Arn
-                        StackName: aws-sam-pipeline-Prod
-                        ChangeSetName: aws-sam-pipeline-ChangeSet-Prod
+                        StackName: aws-sam-pipeline-prod
+                        ChangeSetName: aws-sam-pipeline-ChangeSet-prod
                         TemplatePath: BuildArtifactAsZip::packaged.yaml
                         Capabilities: CAPABILITY_IAM
+                        ParameterOverrides: |
+                            {
+                              "Environment" : "prod"
+                            }
                       InputArtifacts:
                         - Name: BuildArtifactAsZip
                       RunOrder: 2
@@ -147,11 +251,21 @@ Resources:
                       Configuration:
                         ActionMode: CHANGE_SET_EXECUTE
                         RoleArn: !GetAtt CloudFormationExecutionRole.Arn
-                        StackName: aws-sam-pipeline-Prod
-                        ChangeSetName: aws-sam-pipeline-ChangeSet-Prod
+                        StackName: aws-sam-pipeline-prod
+                        ChangeSetName: aws-sam-pipeline-ChangeSet-prod
                       OutputArtifacts:
-                        - Name: aws-sam-pipelineProdChangeSet
+                        - Name: aws-sam-pipelineprodChangeSet
                       RunOrder: 3
+
+
+####    ###    ##     ## 
+ ##    ## ##   ###   ### 
+ ##   ##   ##  #### #### 
+ ##  ##     ## ## ### ## 
+ ##  ######### ##     ## 
+ ##  ##     ## ##     ## 
+#### ##     ## ##     ## 
+
     CodeBuildServiceRole:
         Type: AWS::IAM::Role
         Properties:
@@ -199,6 +313,8 @@ Resources:
                         Effect: Allow
                         Action: 'ssm:GetParameters'
                         Resource: '*'
+
+
     CloudFormationExecutionRole:
       Type: AWS::IAM::Role
       Properties:
