@@ -65,7 +65,7 @@ Resources:
   UserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Properties:
-      Domain: !FindInMap [UserPoolResourcesName, !Ref Environment, envName]
+      Domain: userpooltestase
       UserPoolId: !Ref UserPool
   IAMRole:
     Type: 'AWS::IAM::Role'
@@ -106,7 +106,7 @@ Resources:
                 Resource: '*'
 Outputs:
   UserPoolId:
-    Value: !Ref !FindInMap [UserPoolResourcesName, !Ref Environment, envName]
+    Value: !Ref UserPool
     Export: 
       Name: "UserPool::Id"
   UserPoolClientId: 
@@ -114,7 +114,7 @@ Outputs:
     Export: 
       Name: "UserPoolClient::Id"
   UserPoolArn: 
-    Value: !GetAtt !FindInMap [UserPoolResourcesName, !Ref Environment, envName].Arn
+    Value: !GetAtt UserPool.Arn
     Export: 
       Name: "UserPoolArn"
   IAMArn:
