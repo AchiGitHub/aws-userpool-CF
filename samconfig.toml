@@ -8,3 +8,4 @@ s3_prefix = "cognito-user-pool"
 region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=\"dev\""
