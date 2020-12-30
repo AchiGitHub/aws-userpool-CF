@@ -60,7 +60,3 @@ Outputs:
     Value: !GetAtt UserPool.Arn
     Export: 
       Name: "UserPoolArn"
-  IAMArn:
-    Value: !GetAtt IAMRole.Arn
-    Export: 
-      Name: "IAM::ARN"
