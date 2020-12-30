@@ -1,31 +1,11 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Cognito Stack
-
-Parameters:
-  Environment:
-    Type: String
-    Default: dev
-    AllowedValues:
-      - dev
-      - staging
-      - prod
-    Description: Environment of this stack of resources
-
-Mappings:
-  UserPoolResourcesName:
-    dev:
-      envName: user-pool-dev
-    staging:
-      envName: user-pool-staging
-    prod:
-      envName: user-pool-prod
-
 Resources:
   #Creates an Amazon Cognito user pool
   UserPool:
     Type: "AWS::Cognito::UserPool"
     Properties:
-      UserPoolName: !FindInMap [UserPoolResourcesName, !Ref Environment, envName]
+      UserPoolName: user-pool-test
       Schema:
         - Name: name
           AttributeDataType: String
@@ -67,43 +47,6 @@ Resources:
     Properties:
       Domain: userpooltestase
       UserPoolId: !Ref UserPool
-  IAMRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      Policies:
-        - PolicyName: Policy_api-lambda-db
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'dynamodb:BatchGetItem'
-                  - 'dynamodb:BatchWriteItem'
-                  - 'dynamodb:TagResource'
-                  - 'dynamodb:UntagResource'
-                  - 'dynamodb:PutItem'
-                  - 'dynamodb:DeleteItem'
-                  - 'dynamodb:GetItem'
-                  - 'dynamodb:Scan'
-                  - 'dynamodb:Query'
-                  - 'dynamodb:UpdateItem'
-                Resource: '*'
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogStream'
-                  - 'logs:CreateLogGroup'
-                  - 'logs:PutLogEvents'
-                Resource: '*'
 Outputs:
   UserPoolId:
     Value: !Ref UserPool
