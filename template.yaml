@@ -32,7 +32,6 @@ Resources:
       AllowedOAuthScopes: 
         - phone
         - email
-        - openid
         - profile
       CallbackURLs: 
         - http://localhost:3000/authenticated
