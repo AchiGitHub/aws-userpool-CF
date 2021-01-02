@@ -15,6 +15,10 @@ Resources:
           AttributeDataType: String
           Mutable: false
           Required: true
+        - Name: phone_number
+          AttributeDataType: String
+          Mutable: false
+          Required: true
   #Specifies an Amazon Cognito user pool client
   UserPoolClient:
     Type: "AWS::Cognito::UserPoolClient"
@@ -25,8 +29,10 @@ Resources:
       AllowedOAuthFlows: 
         - code
       AllowedOAuthFlowsUserPoolClient: true
-      AllowedOAuthScopes:
+      AllowedOAuthScopes: 
+        - phone
         - email
+        - openid
         - profile
       CallbackURLs: 
         - http://localhost:3000/authenticated
